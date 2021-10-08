@@ -66,7 +66,6 @@ class stockProductController{
     static edit(req, res, next){
         stockProduct.findOne({ where: { SKU: req.body.SKU } })
         .then((data) => {
-            console.log(data);
             const { product_name, available_quantity, cost_of_goods_sold, SKU, category } = req.body
             if(!product_name){
                 product_name = data.product_name
@@ -83,7 +82,7 @@ class stockProductController{
             if(!category){
                 category = data.category
             }
-            return stockProduct.update({ product_name, available_quantity, cost_of_goods_sold, SKU, category })
+            return stockProduct.update({product_name, available_quantity, cost_of_goods_sold, SKU, category }, { where: { id: req.params.id}})
         })
         .then((data) => {
             console.log(data);
