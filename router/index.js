@@ -8,7 +8,7 @@ const { authentic } = require('../middleware/authentic')
 
 router.use('/user', routerUser);
 
-// router.use(authentic);
+router.use(authentic);
 
 router.use('/invoice', routerInvoice);
 router.use('/recipient', routerRecipient);

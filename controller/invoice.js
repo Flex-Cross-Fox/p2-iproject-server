@@ -67,33 +67,36 @@ class invoiceController{
     static newInvoice(req, res, next){
         console.log(req.body);
         let arrayForPromiseAll = []
-        invoice.create({date: new Date, recipient_id: req.body[0].recipientName})
+        invoice.create({date: new Date, recipient_id: req.body[0].recipientid})
         .then((data) => {
-            console.log('di line 32');
-            console.log(data);
             for(let a = 0; a < req.body.length; a++){
-                let penjualan = sale.create({ item_id: req.body[a].prudctid, quantity: req.body[a].quantity, discount: req.body[a].discount, total_discount: (req.body[a].quantity * (req.body[a].hargaJual * (req.body[a].discount / 100).toFixed(2))), after_discount: req.body[a].afterDiscount, total: req.body[a].totalAmount, invoice_no: data.id, createdAt: new Date, updatedAt: new Date })
+                let penjualan = sale.create({ item_id: req.body[a].prudctid, quantity: req.body[a].quantity, discount: Math.round(req.body[a].discount), total_discount: Math.round(req.body[a].quantity * (req.body[a].hargaJual * (req.body[a].discount / 100).toFixed(2))), after_discount: Math.round(req.body[a].afterDiscount), total: Math.round(req.body[a].totalAmount), invoice_no: data.id, createdAt: new Date, updatedAt: new Date })
                 arrayForPromiseAll.push(penjualan)    
             }
             return Promise.all(arrayForPromiseAll)
         })
-    .then((data) => {
+        .then(() => {
+            return stockProduct.findAll()
+        })
+        .then((data) => {
+            let kurangStock = []
+            console.log('line 82');
+            for(let d = 0; d < data.length; d++) {
+                for(let c = 0; c < req.body.length; c++){
+                    if(data[d].id == req.body[c].prudctid){
+                        let hasilHitung = ((data[d].available_quantity) - (Number(req.body[c].quantity)))
+                        let stok = stockProduct.update({ available_quantity: hasilHitung }, { where: { id: req.body[c].prudctid }})
+                        kurangStock.push(stok)
+                    }
+                }
+            }
+            return Promise.all(kurangStock)
+        })
+        .then((data) => {
             console.log('di line 45');
             console.log(data);
             res.status(200).json(data)
         })
-        // .then((data) => {
-            // return stockProduct.findAll()
-        // })
-        // .then((data) => {
-            // for(let d = 0; d < data.length; d++) {
-
-            // }
-            // let kurangStock = []
-            // for(let b = 0; b < req.body.length; b++){
-            //     let stok = stockProduct.update({}, { where: { id: req.body.prudctid }})
-            // }
-        // })
         .catch((err) => {
             console.log('di line 50');
             console.log(err);
